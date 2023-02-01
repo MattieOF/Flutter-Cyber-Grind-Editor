@@ -16,6 +16,8 @@ class AppState extends Model {
 
   bool _pastHome = false;
 
+  bool _patternModified = false;
+
   AppState({this.buildContext});
 
   Tool get tool => _tool;
@@ -30,8 +32,18 @@ class AppState extends Model {
 
   bool get pastHome => _pastHome;
 
+  bool get patternModified => _patternModified;
+
   void setPastHome() {
     _pastHome = true;
+  }
+
+  void setPatternModified() {
+    _patternModified = true;
+  }
+
+  void clearPatternModified() {
+    _patternModified = false;
   }
 
   void setToolOptions({int? setToValue, int? plusValue}) {
@@ -72,7 +84,10 @@ class AppState extends Model {
   }
 }
 
-enum AppTab { heights, prefabs }
+enum AppTab { heights, prefabs, preview }
+
 enum Tool { point, brush, fillRect, outlineRect }
+
 enum ToolModifier { plusOne, minusOne, setTo, plusValue }
+
 enum Prefab { none, melee, projectile, jumpPad, stairs, hideous }

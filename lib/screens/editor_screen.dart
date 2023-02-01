@@ -27,7 +27,7 @@ class _EditorScreenState extends State<EditorScreen> {
     return exportableString;
   }
 
-  Future<void> _export() async {
+  Future<bool> _export() async {
     try {
       var date = DateTime.now();
       String? outputPath;
@@ -66,7 +66,7 @@ class _EditorScreenState extends State<EditorScreen> {
           },
         );
         //print(path);
-        return;
+        return true;
       }
 
       var resEx =
@@ -98,7 +98,7 @@ class _EditorScreenState extends State<EditorScreen> {
         }
       }
 
-      print('Setting default filename to ' + (outputPath ?? 'null'));
+      print('Setting default filename to ${outputPath ?? 'null'}');
 
       outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Export your pattern:',
@@ -108,18 +108,25 @@ class _EditorScreenState extends State<EditorScreen> {
         type: FileType.custom,
       );
 
-      print('User selected ' + (outputPath ?? 'null'));
+      print('User selected ${outputPath ?? 'null'}');
 
-      if (outputPath == null) return;
+      if (outputPath == null) return false;
 
       if (!outputPath.endsWith('.cgp')) {
         outputPath += '.cgp';
       }
 
       await File(outputPath).writeAsString(_getExportableString());
+      return true;
     } catch (ex, stack) {
       spawnExceptionDialog(context, "$ex\n$stack");
+      return false;
     }
+  }
+
+  void _exportPressed() {
+    _export().then((success) =>
+        {if (success) AppState.of(context).clearPatternModified()});
   }
 
   @override
@@ -154,7 +161,14 @@ class _EditorScreenState extends State<EditorScreen> {
                       collapsedIcon: const Icon(Icons.widgets),
                     ),
                     TabButton(
-                      onPressed: _export,
+                      onPressed: () => model.setTab(AppTab.preview),
+                      active: model.tab == AppTab.preview,
+                      text: '3D Preview',
+                      collapsed: !gridCentered,
+                      collapsedIcon: const Icon(Icons.widgets),
+                    ),
+                    TabButton(
+                      onPressed: _exportPressed,
                       text: 'Export',
                       collapsed: !gridCentered,
                       collapsedIcon: const Icon(Icons.save),

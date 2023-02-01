@@ -175,6 +175,8 @@ class GridState extends Model {
   void affectBlock(AppState appState, int x, int y) {
     final activeTab = appState.tab;
 
+    appState.setPatternModified();
+
     if (activeTab == AppTab.prefabs) {
       switch (appState.selectedPrefab) {
         case Prefab.none:

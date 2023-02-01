@@ -69,11 +69,38 @@ class _HomeScreenState extends State<HomeScreen> {
     await launchUrlString(sourceUrl, mode: LaunchMode.externalApplication);
   }
 
+  void _newPatternPressed() {
+    if (AppState.of(context).patternModified) {
+      showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Unsaved changes'),
+          content: const Text(
+              'Your current pattern has unsaved changes. Discard them and create a new one, or cancel?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Discard'),
+            ),
+          ],
+        ),
+      ).then((value) => {if (value != null && value) _newPattern()});
+    } else {
+      _newPattern();
+    }
+  }
+
   void _newPattern() {
     AppState.of(context).setPastHome();
     GridState.of(context).resetPattern();
     Navigator.pushNamed(context, '/editor');
   }
+
+  void _showSettings() {}
 
   @override
   Widget build(BuildContext context) {
@@ -117,8 +144,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(
                   width: 200,
                   child: FatButton(
-                    onPressed: _newPattern,
+                    onPressed: _newPatternPressed,
                     child: const Text('NEW'),
+                  ),
+                ),
+                SizedBox(
+                  width: 200,
+                  child: FatButton(
+                    onPressed: _showSettings,
+                    child: const Text('SETTINGS'),
                   ),
                 ),
                 SizedBox(
