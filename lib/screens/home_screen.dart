@@ -5,9 +5,11 @@ import 'package:cgef/state/grid_state.dart';
 import 'package:cgef/widgets/input/fat_button.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:layout/layout.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -18,6 +20,21 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String appVersion = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _getVersion().then((value) => setState(() => appVersion = value));
+  }
+
+  Future<String> _getVersion() async {
+    print(rootBundle);
+    final fileContent = await rootBundle.loadString(
+      "pubspec.yaml",
+    );
+    final pubspec = Pubspec.parse(fileContent);
+    return pubspec.version!.canonicalizedVersion;
+  }
 
   void _openFilePicker() async {
     AppState.of(context).setPastHome();
@@ -49,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openSourceCode() async {
-    const sourceUrl = 'https://gitlab.com/PITR_DEV/flutter-cyber-grind-editor';
+    const sourceUrl = 'https://github.com/PITR-DEV/Flutter-Cyber-Grind-Editor';
     await launchUrlString(sourceUrl, mode: LaunchMode.externalApplication);
   }
 
@@ -123,9 +140,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text(
-                    'CGEF ',
-                    style: TextStyle(
+                  Text(
+                    'CGEF $appVersion ',
+                    style: const TextStyle(
                       fontSize: 12,
                       color: Colors.grey,
                     ),

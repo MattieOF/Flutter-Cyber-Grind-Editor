@@ -20,11 +20,13 @@ class FatButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Margin(
+      margin: flowDown
+          ? const EdgeInsets.only()
+          : const EdgeInsets.only(bottom: LayoutHelper.standardMargin),
       child: SizedBox(
         width: double.infinity,
         child: OutlinedButton(
           onPressed: onPressed,
-          child: child!,
           style: OutlinedButton.styleFrom(
             primary: active ? Colors.black : Colors.white,
             backgroundColor: active ? Colors.white : Colors.transparent,
@@ -45,11 +47,9 @@ class FatButton extends StatelessWidget {
             textStyle: const TextStyle(
                 fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'vcr'),
           ),
+          child: child!,
         ),
       ),
-      margin: flowDown
-          ? const EdgeInsets.only()
-          : const EdgeInsets.only(bottom: LayoutHelper.standardMargin),
     );
   }
 }

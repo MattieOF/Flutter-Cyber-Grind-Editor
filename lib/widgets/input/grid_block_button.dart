@@ -62,12 +62,12 @@ class GridBlockButton extends StatelessWidget {
           ),
           block.prefab == 's'
               ? Margin(
+                  margin: const EdgeInsets.all(3),
                   child: SvgPicture.asset(
                     'assets/Stairs_Map_Preview.svg',
                     color: ColorHelper.blockOverlayColor(block.height),
                     height: 10,
                   ),
-                  margin: const EdgeInsets.all(3),
                 )
               : Container(),
         ],

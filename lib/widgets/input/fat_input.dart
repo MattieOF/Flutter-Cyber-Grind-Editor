@@ -11,6 +11,7 @@ class FatInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Margin(
+      margin: const EdgeInsets.only(bottom: LayoutHelper.standardMargin),
       child: SizedBox(
         width: double.infinity,
         child: TextField(
@@ -69,7 +70,6 @@ class FatInput extends StatelessWidget {
           ),
         ),
       ),
-      margin: const EdgeInsets.only(bottom: LayoutHelper.standardMargin),
     );
   }
 }
