@@ -15,6 +15,30 @@ class GridBlockButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var useImage = appState.tab == AppTab.prefabs &&
+        (block.prefab == "H" ||
+            block.prefab == "n" ||
+            block.prefab == "J" ||
+            block.prefab == "p");
+
+    var prefabImage = "";
+    if (useImage) {
+      switch (block.prefab) {
+        case "H":
+          prefabImage = "assets/Hideous_Mass.png";
+          break;
+        case "n":
+          prefabImage = "assets/Filth.png";
+          break;
+        case "J":
+          prefabImage = "assets/Jump_Pad.png";
+          break;
+        case "p":
+          prefabImage = "assets/Shotgun_Husk.png";
+          break;
+      }
+    }
+
     return InkWell(
       enableFeedback: false,
       onTap: () {
@@ -44,20 +68,22 @@ class GridBlockButton extends StatelessWidget {
               ),
             ),
             child: Center(
-              child: Text(
-                appState.tab == AppTab.heights
-                    ? block.height.toString()
-                    : block.prefab,
-                // (index ~/ 16).toString(),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: ColorHelper.blockTextColor(
-                    block.height,
-                    hidden:
-                        appState.tab == AppTab.prefabs && block.prefab == '0',
-                  ),
-                ),
-              ),
+              child: useImage
+                  ? Image.asset(prefabImage)
+                  : Text(
+                      appState.tab == AppTab.heights
+                          ? block.height.toString()
+                          : block.prefab,
+                      // (index ~/ 16).toString(),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: ColorHelper.blockTextColor(
+                          block.height,
+                          hidden: appState.tab == AppTab.prefabs &&
+                              block.prefab == '0',
+                        ),
+                      ),
+                    ),
             ),
           ),
           block.prefab == 's'

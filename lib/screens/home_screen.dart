@@ -28,7 +28,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<String> _getVersion() async {
-    print(rootBundle);
     final fileContent = await rootBundle.loadString(
       "pubspec.yaml",
     );
