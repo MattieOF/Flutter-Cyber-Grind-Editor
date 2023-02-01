@@ -175,11 +175,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    'CGEF $appVersion ',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
+                  TextButton(
+                    onPressed: () {
+                      showAboutDialog(
+                        context: context,
+                        applicationName: "Cyber Grind Pattern Editor",
+                        applicationVersion: appVersion,
+                        applicationLegalese:
+                            "Simple tool to edit Cyber Grind patterns for ULTRAKILL.\nBy PITR, with contributions from Mattie\ncopyright lololol",
+                      );
+                    },
+                    child: Text(
+                      'CGE $appVersion ',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
                   const SizedBox(
