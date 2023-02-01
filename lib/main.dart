@@ -1,6 +1,7 @@
 import 'package:cgef/screens/main_layout.dart';
 import 'package:cgef/screens/editor_screen.dart';
 import 'package:cgef/screens/home_screen.dart';
+import 'package:cgef/screens/settings_screen.dart';
 import 'package:cgef/state/app_state.dart';
 import 'package:cgef/state/grid_state.dart';
 import 'package:cgef/widgets/quit_confirmation.dart';
@@ -56,6 +57,7 @@ class _AppRootState extends State<AppRoot> {
                 content: EditorScreen(),
               ),
             ),
+        '/settings': (context) => const SettingsScreen()
       },
     );
   }

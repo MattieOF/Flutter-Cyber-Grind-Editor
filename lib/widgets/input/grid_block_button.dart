@@ -16,6 +16,7 @@ class GridBlockButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var useImage = appState.tab == AppTab.prefabs &&
+        appState.useImagesForPrefabs &&
         (block.prefab == "H" ||
             block.prefab == "n" ||
             block.prefab == "J" ||

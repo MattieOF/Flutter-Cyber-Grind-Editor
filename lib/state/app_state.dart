@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppState extends Model {
   BuildContext? buildContext;
+
+  SharedPreferences? _sharedPreferences;
 
   Tool _tool = Tool.point;
   ToolModifier _toolModifier = ToolModifier.plusOne;
@@ -18,7 +21,16 @@ class AppState extends Model {
 
   bool _patternModified = false;
 
-  AppState({this.buildContext});
+  bool _useImagesForPrefabs = true;
+
+  AppState({this.buildContext}) {
+    SharedPreferences.getInstance().then((value) {
+      _sharedPreferences = value;
+      if (_sharedPreferences == null) return;
+      _useImagesForPrefabs =
+          _sharedPreferences!.getBool("useImagesForPrefabs") ?? true;
+    });
+  }
 
   Tool get tool => _tool;
   ToolModifier get toolModifier => _toolModifier;
@@ -34,6 +46,8 @@ class AppState extends Model {
 
   bool get patternModified => _patternModified;
 
+  bool get useImagesForPrefabs => _useImagesForPrefabs;
+
   void setPastHome() {
     _pastHome = true;
   }
@@ -44,6 +58,14 @@ class AppState extends Model {
 
   void clearPatternModified() {
     _patternModified = false;
+  }
+
+  void setUseImagesForPrefabs(bool newValue) {
+    _useImagesForPrefabs = newValue;
+    if (_sharedPreferences != null) {
+      _sharedPreferences!.setBool("useImagesForPrefabs", newValue);
+    }
+    notifyListeners();
   }
 
   void setToolOptions({int? setToValue, int? plusValue}) {

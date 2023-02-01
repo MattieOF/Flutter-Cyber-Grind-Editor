@@ -100,7 +100,9 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.pushNamed(context, '/editor');
   }
 
-  void _showSettings() {}
+  void _showSettings() {
+    Navigator.pushNamed(context, '/settings');
+  }
 
   @override
   Widget build(BuildContext context) {
