@@ -56,9 +56,9 @@ class ColorHelper {
   static Color blockTextColor(int height, {bool hidden = false}) {
     // Return red if its under the zap height
     if (height <= ZAP_HEIGHT - 5) {
-      return const Color.fromRGBO(255, 0, 0, 1);
+      return Color.fromRGBO(255, 0, 0, hidden ? 0.3 : 1);
     } else if (height <= ZAP_HEIGHT) {
-      return const Color.fromRGBO(255, 100, 100, 1);
+      return Color.fromRGBO(255, 100, 100, hidden ? 0.3 : 1);
     }
 
     final evaluatedHeight = evaluateHeight(height);
