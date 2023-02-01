@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:bezier/bezier.dart';
 import 'package:vector_math/vector_math.dart';
 
+const int ZAP_HEIGHT = -4;
+
 class ColorHelper {
   static final brightnessCurve = CubicBezier([
     Vector2(0, 0),
@@ -52,6 +54,13 @@ class ColorHelper {
   }
 
   static Color blockTextColor(int height, {bool hidden = false}) {
+    // Return red if its under the zap height
+    if (height <= ZAP_HEIGHT - 5) {
+      return const Color.fromRGBO(255, 0, 0, 1);
+    } else if (height <= ZAP_HEIGHT) {
+      return const Color.fromRGBO(255, 100, 100, 1);
+    }
+
     final evaluatedHeight = evaluateHeight(height);
     if (evaluatedHeight > 0.3 && evaluatedHeight < 0.7) {
       return hidden
