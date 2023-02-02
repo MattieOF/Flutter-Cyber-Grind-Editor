@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_window_close/flutter_window_close.dart';
 
@@ -46,16 +47,20 @@ class _QuitConfirmationState extends State<QuitConfirmation> {
   @override
   void initState() {
     super.initState();
-    FlutterWindowClose.setWindowShouldCloseHandler(
-      () async {
-        return await _dialog();
-      },
-    );
+    if (!kIsWeb) {
+      FlutterWindowClose.setWindowShouldCloseHandler(
+        () async {
+          return await _dialog();
+        },
+      );
+    }
   }
 
   @override
   void dispose() {
-    FlutterWindowClose.setWindowShouldCloseHandler(null);
+    if (!kIsWeb) {
+      FlutterWindowClose.setWindowShouldCloseHandler(null);
+    }
     super.dispose();
   }
 

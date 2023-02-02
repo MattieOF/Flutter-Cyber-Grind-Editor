@@ -1,3 +1,4 @@
+import 'dart:html' as html;
 import 'package:cgef/screens/main_layout.dart';
 import 'package:cgef/screens/editor_screen.dart';
 import 'package:cgef/screens/home_screen.dart';
@@ -5,6 +6,7 @@ import 'package:cgef/screens/settings_screen.dart';
 import 'package:cgef/state/app_state.dart';
 import 'package:cgef/state/grid_state.dart';
 import 'package:cgef/widgets/quit_confirmation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_window_close/flutter_window_close.dart';
 import 'package:layout/layout.dart';
@@ -36,7 +38,16 @@ class _AppRootState extends State<AppRoot> {
   @override
   void initState() {
     super.initState();
-    FlutterWindowClose.setWindowShouldCloseHandler(null);
+    if (!kIsWeb) {
+      FlutterWindowClose.setWindowShouldCloseHandler(null);
+    }
+
+    html.window.onBeforeUnload.listen((event) async {
+      if (event is html.BeforeUnloadEvent &&
+          AppState.of(context).patternModified) {
+        event.returnValue = "If you refresh, your pattern will not be saved!";
+      }
+    });
   }
 
   @override

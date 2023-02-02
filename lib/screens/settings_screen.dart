@@ -57,6 +57,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         CheckboxListTile(
                           title: const Text("Use images for prefabs"),
+                          subtitle: const Text(
+                              "Some people prefer the lil characters instead"),
                           onChanged: (value) {
                             setState(() {
                               appState.setUseImagesForPrefabs(value!);
