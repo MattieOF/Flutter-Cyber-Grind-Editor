@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cgef/widgets/exception_dialog.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:cgef/helpers/parsing_helper.dart';
 import 'package:cgef/state/app_state.dart';
@@ -12,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:layout/layout.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:universal_html/html.dart' as html;
 
 class EditorScreen extends StatefulWidget {
   const EditorScreen({Key? key}) : super(key: key);
@@ -34,6 +37,25 @@ class _EditorScreenState extends State<EditorScreen> {
       final fileName =
           '${date.hour}_${date.minute} - ${date.day}_${date.month}_${date.year}.cgp';
 
+      // Web implementation
+      if (kIsWeb) {
+        final output = _getExportableString();
+        final bytes = utf8.encode(output);
+        final blob = html.Blob([bytes]);
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.document.createElement('a') as html.AnchorElement
+          ..href = url
+          ..style.display = 'none'
+          ..download = fileName;
+        anchor.click();
+
+        // Cleanup
+        html.document.body!.children.remove(anchor);
+        html.Url.revokeObjectUrl(url);
+        return true; // Technically the user can cancel the download, but we can't detect that (afaik).
+      }
+
+      // Mobile implementation
       if (Platform.isAndroid || Platform.isIOS || Platform.isFuchsia) {
         var path = await getExternalStorageDirectory();
         outputPath = p.join(path!.path, fileName);
@@ -69,6 +91,7 @@ class _EditorScreenState extends State<EditorScreen> {
         return true;
       }
 
+      // Desktop implementation
       var resEx =
           // p.join(
           //     p.join('C:', 'Program Files (x86)', 'Steam', 'steamapps', 'common',
@@ -83,7 +106,7 @@ class _EditorScreenState extends State<EditorScreen> {
 
         if (ultrakillDirectory.path.split(Platform.pathSeparator).last ==
             "ULTRAKILL") {
-          print('ULTRAKILL dir spotted');
+          // print('ULTRAKILL dir spotted');
 
           var patternsDir = Directory(
               p.join(ultrakillDirectory.path, 'Cybergrind', 'Patterns'));
@@ -91,14 +114,14 @@ class _EditorScreenState extends State<EditorScreen> {
             outputPath = patternsDir.path;
           }
         } else {
-          print('cgef seems to be not in StreamingAssets.');
-          print('attempting to use default path');
+          // print('cgef seems to be not in StreamingAssets.');
+          // print('attempting to use default path');
           outputPath = p.join('C:', 'Program Files (x86)', 'Steam', 'steamapps',
               'common', 'ULTRAKILL', 'Cybergrind', 'Patterns');
         }
       }
 
-      print('Setting default filename to ${outputPath ?? 'null'}');
+      // print('Setting default filename to ${outputPath ?? 'null'}');
 
       outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Export your pattern:',
@@ -108,7 +131,7 @@ class _EditorScreenState extends State<EditorScreen> {
         type: FileType.custom,
       );
 
-      print('User selected ${outputPath ?? 'null'}');
+      // print('User selected ${outputPath ?? 'null'}');
 
       if (outputPath == null) return false;
 
@@ -160,13 +183,14 @@ class _EditorScreenState extends State<EditorScreen> {
                       collapsed: !gridCentered,
                       collapsedIcon: const Icon(Icons.widgets),
                     ),
-                    TabButton(
-                      onPressed: () => model.setTab(AppTab.preview),
-                      active: model.tab == AppTab.preview,
-                      text: '3D Preview',
-                      collapsed: !gridCentered,
-                      collapsedIcon: const Icon(Icons.widgets),
-                    ),
+                    if (!kIsWeb)
+                      TabButton(
+                        onPressed: () => model.setTab(AppTab.preview),
+                        active: model.tab == AppTab.preview,
+                        text: '3D Preview',
+                        collapsed: !gridCentered,
+                        collapsedIcon: const Icon(Icons.widgets),
+                      ),
                     TabButton(
                       onPressed: _exportPressed,
                       text: 'Export',

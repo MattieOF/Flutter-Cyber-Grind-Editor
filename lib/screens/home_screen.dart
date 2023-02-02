@@ -4,12 +4,14 @@ import 'package:cgef/state/app_state.dart';
 import 'package:cgef/state/grid_state.dart';
 import 'package:cgef/widgets/input/fat_button.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:layout/layout.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
+import 'package:universal_html/html.dart' as html;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -39,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
     AppState.of(context).setPastHome();
 
     var specifyExtension =
-        Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+        kIsWeb || Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
     String? path;
 
@@ -50,18 +52,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // print('initial directory: $path');
 
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      allowedExtensions: specifyExtension ? ['cgp'] : null,
-      type: specifyExtension ? FileType.custom : FileType.any,
-      // initialDirectory: path,
-    );
-
-    if (result == null) return;
-    var file = File(result.files.single.path!);
-    file.readAsString().then((String contents) {
-      GridState.of(context).loadFromString(contents);
-      Navigator.of(context).pushNamed('/editor');
-    });
+    // TODO: THIS IS A WORKAROUND UNTIL THE FILE PICKER LIBRARY GETS UPDATED TO WORK WITH WEB AGAIN
+    if (!kIsWeb) {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        allowedExtensions: specifyExtension ? ['cgp'] : null,
+        type: specifyExtension ? FileType.custom : FileType.any,
+        // initialDirectory: path,
+      );
+      if (result == null) return;
+      var file = File(result.files.single.path!);
+      file.readAsString().then((String contents) {
+        GridState.of(context).loadFromString(contents);
+        Navigator.of(context).pushNamed('/editor');
+      });
+    } else {
+      final input = html.FileUploadInputElement();
+      input.accept = ".cgp";
+      input.click();
+      html.document.body!.append(input);
+      await input.onChange.first;
+      if (input.files!.isEmpty) return;
+      final reader = html.FileReader();
+      reader.readAsText(input.files![0]);
+      reader.onLoad.first.then((value) {
+        GridState.of(context).loadFromString(reader.result.toString());
+        Navigator.of(context).pushNamed('/editor');
+        html.document.body!.children.remove(input);
+      });
+    }
   }
 
   void _openSourceCode() async {

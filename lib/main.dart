@@ -1,4 +1,3 @@
-import 'dart:html' as html;
 import 'package:cgef/screens/main_layout.dart';
 import 'package:cgef/screens/editor_screen.dart';
 import 'package:cgef/screens/home_screen.dart';
@@ -11,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_window_close/flutter_window_close.dart';
 import 'package:layout/layout.dart';
 import 'package:scoped_model/scoped_model.dart';
+import "package:universal_html/html.dart" as html;
 
 Future<void> main() async {
   Widget rootWidget = const AppRoot();
@@ -42,12 +42,14 @@ class _AppRootState extends State<AppRoot> {
       FlutterWindowClose.setWindowShouldCloseHandler(null);
     }
 
-    html.window.onBeforeUnload.listen((event) async {
-      if (event is html.BeforeUnloadEvent &&
-          AppState.of(context).patternModified) {
-        event.returnValue = "If you refresh, your pattern will not be saved!";
-      }
-    });
+    if (kIsWeb) {
+      html.window.onBeforeUnload.listen((event) async {
+        if (event is html.BeforeUnloadEvent &&
+            AppState.of(context).patternModified) {
+          event.returnValue = "If you refresh, your pattern will not be saved!";
+        }
+      });
+    }
   }
 
   @override
