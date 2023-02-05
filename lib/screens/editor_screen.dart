@@ -386,9 +386,9 @@ class _EditorScreenState extends State<EditorScreen> {
     position.y += _pillarSize.y / 2 + 2;
     var scale = rl.Vector3.all(1);
 
-    // 1 = front, 0 = neither/both, -1 = back
+    // 1 = back, 0 = neither/both, -1 = front
     int backFront = 0;
-    // 1 = left, 0 = neither/both, -1 right
+    // 1 = right, 0 = neither/both, -1 left
     int rightLeft = 0;
 
     int frontDiff = y != gridSize - 1
@@ -396,6 +396,7 @@ class _EditorScreenState extends State<EditorScreen> {
         : 0;
     int backDiff =
         y != 0 ? _gridState!.grid[x][y - 1].height - element.height : 0;
+
     bool front = frontDiff > 0 && frontDiff <= 2;
     bool back = backDiff > 0 && backDiff <= 2;
     if (front && back) {
@@ -417,12 +418,13 @@ class _EditorScreenState extends State<EditorScreen> {
     }
 
     int leftDiff = x != gridSize - 1
-        ? _gridState!.grid[x + 1][y].height - element.height
+        ? (_gridState!.grid[x + 1][y].height) - element.height
         : 0;
     int rightDiff =
         x != 0 ? _gridState!.grid[x - 1][y].height - element.height : 0;
     bool left = leftDiff > 0 && leftDiff <= 2;
     bool right = rightDiff > 0 && rightDiff <= 2;
+
     if (left && right) {
       if (leftDiff < rightDiff) {
         scale.y = 0.5;
@@ -441,6 +443,27 @@ class _EditorScreenState extends State<EditorScreen> {
       rightLeft = -1;
     }
     if (scale.y == 0.5) position.y -= 0.5;
+
+    if (backFront != 0 && rightLeft != 0) {
+      bool frontOrBackHasStair =
+          (y != gridSize - 1 && _gridState!.grid[x][y + 1].prefab == "s") ||
+              (y != 0 && _gridState!.grid[x][y - 1].prefab == "s");
+      bool leftOrRightHasStair =
+          (x != gridSize - 1 && _gridState!.grid[x + 1][y].prefab == "s") ||
+              (x != 0 && _gridState!.grid[x - 1][y].prefab == "s");
+
+      if (frontOrBackHasStair && !leftOrRightHasStair) {
+        backFront = 0;
+      } else if (leftOrRightHasStair && !frontOrBackHasStair) {
+        rightLeft = 0;
+      } else {
+        if (((leftDiff < frontDiff) && (leftDiff < backDiff)) ||
+            ((rightDiff < frontDiff) && (rightDiff < backDiff)))
+          backFront = 0;
+        else if (((frontDiff < leftDiff) && (frontDiff < rightDiff)) ||
+            ((backDiff < leftDiff) && (backDiff < rightDiff))) rightLeft = 0;
+      }
+    }
 
     // Make sure that we only do corner stairs if they're both the same height
     // Prevents a corner stair that doesn't actually reach one of the sides
@@ -473,6 +496,8 @@ class _EditorScreenState extends State<EditorScreen> {
     }
 
     double angle = 0;
+
+    // if (x == 5 && y == 1) print("$backFront, $rightLeft");
     if (backFront == 1) {
       angle = 270;
     } else if (backFront == -1) {
@@ -710,9 +735,29 @@ class _EditorScreenState extends State<EditorScreen> {
         builder: (context, child, model) {
           return gridCentered
               ? Center(
-                  child: ArenaGrid(model),
+                  child: Column(
+                    children: [
+                      Text(_gridState?.getHoveredString() ?? ""),
+                      const SizedBox(
+                        height: 15,
+                      ),
+                      Expanded(
+                        child: ArenaGrid(model),
+                      )
+                    ],
+                  ),
                 )
-              : ArenaGrid(model);
+              : Column(
+                  children: [
+                    Text(_gridState?.getHoveredString() ?? ""),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    Expanded(
+                      child: ArenaGrid(model),
+                    )
+                  ],
+                );
         },
       ),
     );

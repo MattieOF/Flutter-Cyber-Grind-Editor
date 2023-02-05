@@ -230,6 +230,14 @@ class GridState extends Model {
     _hoveredOverIndexes.clear();
   }
 
+  String getHoveredString() {
+    if (_hoveredOverIndexes.isEmpty) {
+      return "";
+    } else {
+      return "${_hoveredOverIndexes[0] % ParsingHelper.arenaSize}, ${_hoveredOverIndexes[0] ~/ ParsingHelper.arenaSize}";
+    }
+  }
+
   void setHover(int x, int y, {bool heavy = false}) {
     if (x < 0 ||
         x > ParsingHelper.arenaSize - 1 ||
