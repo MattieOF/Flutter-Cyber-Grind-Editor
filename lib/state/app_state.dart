@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,11 +19,21 @@ class AppState extends Model {
 
   int _toolSelectedGridBlock = -1;
 
+  double _previewCamSensitivity = 0.5;
+
+  double _camFov = 60;
+
+  bool _invertMouseLook = false;
+
   bool _pastHome = false;
 
   bool _patternModified = false;
 
   bool _useImagesForPrefabs = true;
+
+  bool _dirty = false;
+
+  Timer? raylibUpdateTimer;
 
   AppState({this.buildContext}) {
     SharedPreferences.getInstance().then((value) {
@@ -29,6 +41,22 @@ class AppState extends Model {
       if (_sharedPreferences == null) return;
       _useImagesForPrefabs =
           _sharedPreferences!.getBool("useImagesForPrefabs") ?? true;
+      _previewCamSensitivity =
+          _sharedPreferences!.getDouble("previewCamSensitivity") ?? 0.5;
+      _camFov = _sharedPreferences!.getDouble("camFOV") ?? 60;
+      _invertMouseLook =
+          _sharedPreferences!.getBool("invertMouselook") ?? false;
+      Timer.periodic(Duration(seconds: 1), (timer) {
+        if (_dirty) {
+          _sharedPreferences!
+              .setBool("useImagesForPrefabs", _useImagesForPrefabs);
+          _sharedPreferences!
+              .setDouble("previewCamSensitivity", _previewCamSensitivity);
+          _sharedPreferences!.setDouble("camFOV", _camFov);
+          _sharedPreferences!.setBool("invertMouselook", _invertMouseLook);
+          _dirty = false;
+        }
+      });
     });
   }
 
@@ -48,6 +76,12 @@ class AppState extends Model {
 
   bool get useImagesForPrefabs => _useImagesForPrefabs;
 
+  double get previewCamSensitivity => _previewCamSensitivity;
+
+  double get camFov => _camFov;
+
+  bool get invertMouselook => _invertMouseLook;
+
   void setPastHome() {
     _pastHome = true;
   }
@@ -62,9 +96,25 @@ class AppState extends Model {
 
   void setUseImagesForPrefabs(bool newValue) {
     _useImagesForPrefabs = newValue;
-    if (_sharedPreferences != null) {
-      _sharedPreferences!.setBool("useImagesForPrefabs", newValue);
-    }
+    _dirty = true;
+    notifyListeners();
+  }
+
+  void setPreviewCamSensitivity(double newValue) {
+    _previewCamSensitivity = newValue;
+    _dirty = true;
+    notifyListeners();
+  }
+
+  void setInvertMouselook(bool newValue) {
+    _invertMouseLook = newValue;
+    _dirty = true;
+    notifyListeners();
+  }
+
+  void setFOV(double newValue) {
+    _camFov = newValue;
+    _dirty = true;
     notifyListeners();
   }
 

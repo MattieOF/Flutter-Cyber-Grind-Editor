@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cgef/screens/main_layout.dart';
 import 'package:cgef/screens/editor_screen.dart';
 import 'package:cgef/screens/home_screen.dart';
@@ -10,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_window_close/flutter_window_close.dart';
 import 'package:layout/layout.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:raylib/raylib.dart' as rl;
 import "package:universal_html/html.dart" as html;
 
 Future<void> main() async {
@@ -23,6 +26,13 @@ Future<void> main() async {
     model: GridState(),
     child: rootWidget,
   );
+
+  if (Platform.isWindows || Platform.isLinux) {
+    rl.initLibrary(
+      linux: "./data/flutter_assets/assets/raylib/raylib.so",
+      windows: "./data/flutter_assets/assets/raylib/raylib.dll",
+    );
+  }
 
   runApp(rootWidget);
 }
