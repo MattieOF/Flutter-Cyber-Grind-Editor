@@ -1,4 +1,5 @@
 import 'package:cgef/helpers/layout_helper.dart';
+import 'package:cgef/helpers/parsing_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:layout/layout.dart';
@@ -21,10 +22,23 @@ class FatInput extends StatelessWidget {
             TextInputFormatter.withFunction((oldValue, newValue) {
               try {
                 final text = newValue.text;
+                final maxLength =
+                    (-ParsingHelper.heightLimit).toString().length - 1;
                 if (text.isNotEmpty && text != '-') {
                   var num = double.parse(text);
-                  if (num > 50) return newValue.copyWith(text: '50');
-                  if (num < -50) return newValue.copyWith(text: '-50');
+                  if (num > ParsingHelper.heightLimit) {
+                    return newValue.copyWith(
+                      text: ParsingHelper.heightLimit.toString(),
+                      selection: TextSelection(
+                          baseOffset: maxLength, extentOffset: maxLength),
+                    );
+                  } else if (num < -ParsingHelper.heightLimit) {
+                    return newValue.copyWith(
+                      text: (-ParsingHelper.heightLimit).toString(),
+                      selection: TextSelection(
+                          baseOffset: maxLength, extentOffset: maxLength),
+                    );
+                  }
                 }
                 return newValue;
               } catch (e) {}

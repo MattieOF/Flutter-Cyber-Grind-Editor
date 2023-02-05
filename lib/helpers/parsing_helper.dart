@@ -2,6 +2,7 @@ import 'package:cgef/state/grid_state.dart';
 
 class ParsingHelper {
   static const arenaSize = 16;
+  static const heightLimit = 999;
 
   List<List<GridBlock>> importString(String input) {
     final lines = input.split('\n');

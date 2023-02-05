@@ -167,8 +167,8 @@ class GridState extends Model {
   }
 
   int gridHeightLimiter(int value) {
-    if (value > 50) return 50;
-    if (value < -50) return -50;
+    if (value > ParsingHelper.heightLimit) return ParsingHelper.heightLimit;
+    if (value < -ParsingHelper.heightLimit) return -ParsingHelper.heightLimit;
     return value;
   }
 
