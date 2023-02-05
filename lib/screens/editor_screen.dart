@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:cgef/state/app_state.dart';
 import 'package:cgef/widgets/exception_dialog.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:cgef/helpers/parsing_helper.dart';
@@ -683,83 +685,90 @@ class _EditorScreenState extends State<EditorScreen> {
         context.breakpoint > LayoutBreakpoint.sm;
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size(0, 52),
-        child: Center(
-          child: Margin(
-            margin: const EdgeInsets.only(bottom: 12),
-            child: ScopedModelDescendant<AppState>(
-              builder: (context, child, model) {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TabButton(
-                      onPressed: () => model.setTab(AppTab.heights),
-                      active: model.tab == AppTab.heights,
-                      text: 'Heights',
-                      collapsed: !gridCentered,
-                      collapsedIcon: const Icon(Icons.height),
-                    ),
-                    TabButton(
-                      onPressed: () => model.setTab(AppTab.prefabs),
-                      active: model.tab == AppTab.prefabs,
-                      text: 'Prefabs',
-                      collapsed: !gridCentered,
-                      collapsedIcon: const Icon(Icons.widgets),
-                    ),
-                    if (Platform.isWindows || Platform.isLinux)
+        appBar: PreferredSize(
+          preferredSize: const Size(0, 52),
+          child: Center(
+            child: Margin(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: ScopedModelDescendant<AppState>(
+                builder: (context, child, model) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                       TabButton(
-                        onPressed: () {
-                          _initPreview();
-                        },
-                        active: model.tab == AppTab.preview,
-                        text: '3D Preview',
+                        onPressed: () => model.setTab(AppTab.heights),
+                        active: model.tab == AppTab.heights,
+                        text: 'Heights',
                         collapsed: !gridCentered,
-                        collapsedIcon: const Icon(Icons.remove_red_eye),
+                        collapsedIcon: const Icon(Icons.height),
                       ),
-                    TabButton(
-                      onPressed: _exportPressed,
-                      text: 'Export',
-                      collapsed: !gridCentered,
-                      collapsedIcon: const Icon(Icons.save),
-                    )
-                  ],
-                );
-              },
+                      TabButton(
+                        onPressed: () => model.setTab(AppTab.prefabs),
+                        active: model.tab == AppTab.prefabs,
+                        text: 'Prefabs',
+                        collapsed: !gridCentered,
+                        collapsedIcon: const Icon(Icons.widgets),
+                      ),
+                      if (Platform.isWindows || Platform.isLinux)
+                        TabButton(
+                          onPressed: () {
+                            _initPreview();
+                          },
+                          active: model.tab == AppTab.preview,
+                          text: '3D Preview',
+                          collapsed: !gridCentered,
+                          collapsedIcon: const Icon(Icons.remove_red_eye),
+                        ),
+                      TabButton(
+                        onPressed: _exportPressed,
+                        text: 'Export',
+                        collapsed: !gridCentered,
+                        collapsedIcon: const Icon(Icons.save),
+                      )
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ),
-      ),
-      body: ScopedModelDescendant<GridState>(
-        builder: (context, child, model) {
-          return gridCentered
-              ? Center(
-                  child: Column(
-                    children: [
-                      Text(_gridState?.getHoveredString() ?? ""),
-                      const SizedBox(
-                        height: 15,
+        body: Listener(
+          child: ScopedModelDescendant<GridState>(
+            builder: (context, child, model) {
+              return gridCentered
+                  ? Center(
+                      child: Column(
+                        children: [
+                          Text(_gridState?.getHoveredString() ?? ""),
+                          const SizedBox(
+                            height: 15,
+                          ),
+                          Expanded(
+                            child: ArenaGrid(model),
+                          )
+                        ],
                       ),
-                      Expanded(
-                        child: ArenaGrid(model),
-                      )
-                    ],
-                  ),
-                )
-              : Column(
-                  children: [
-                    Text(_gridState?.getHoveredString() ?? ""),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    Expanded(
-                      child: ArenaGrid(model),
                     )
-                  ],
-                );
-        },
-      ),
-    );
+                  : Column(
+                      children: [
+                        Text(_gridState?.getHoveredString() ?? ""),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        Expanded(
+                          child: ArenaGrid(model),
+                        )
+                      ],
+                    );
+            },
+          ),
+          onPointerDown: (event) {
+            if (event.kind == PointerDeviceKind.mouse &&
+                event.buttons == kSecondaryMouseButton) {
+              if (_gridState != null) _gridState!.onRightClick(_appState!);
+            }
+          },
+        ));
   }
 }

@@ -150,7 +150,7 @@ class GridState extends Model {
     computePaint(appState);
   }
 
-  void paintStop(AppState appsState) {
+  void paintStop() {
     _isPainting = false;
     resetHover();
     notifyListeners();
@@ -298,6 +298,12 @@ class GridState extends Model {
       case Tool.point:
         break;
     }
+    notifyListeners();
+  }
+
+  void onRightClick(AppState appState) {
+    appState.setGridBlockSelected(-1);
+    paintStop();
     notifyListeners();
   }
 
