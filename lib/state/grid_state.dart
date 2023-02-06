@@ -18,6 +18,10 @@ class GridState extends Model {
   GridState({this.buildContext});
 
   List<List<GridBlock>> get grid => _grid;
+  set grid(List<List<GridBlock>> grid) {
+    _grid = grid;
+    notifyListeners();
+  }
 
   void resetPattern() {
     _grid = List.generate(
@@ -98,6 +102,9 @@ class GridState extends Model {
 
     switch (appState.tool) {
       case Tool.point:
+        affectBlock(appState, x, y);
+        appState.submitCommand(this, "Change point");
+        break;
       case Tool.brush:
         affectBlock(appState, x, y);
         break;
@@ -111,6 +118,7 @@ class GridState extends Model {
               .forEach((element) {
             affectBlock(appState, element.x, element.y);
           });
+          appState.submitCommand(this, "Fill rect");
           appState.setGridBlockSelected(-1);
           resetHover();
         }
@@ -125,6 +133,7 @@ class GridState extends Model {
               .forEach((element) {
             affectBlock(appState, element.x, element.y);
           });
+          appState.submitCommand(this, "Outline rect");
           appState.setGridBlockSelected(-1);
           resetHover();
         }
@@ -150,7 +159,9 @@ class GridState extends Model {
     computePaint(appState);
   }
 
-  void paintStop() {
+  void paintStop(AppState appState) {
+    if (appState.tool == Tool.brush) appState.submitCommand(this, "Use brush");
+
     _isPainting = false;
     resetHover();
     notifyListeners();
@@ -303,7 +314,6 @@ class GridState extends Model {
 
   void onRightClick(AppState appState) {
     appState.setGridBlockSelected(-1);
-    paintStop();
     notifyListeners();
   }
 
@@ -323,4 +333,12 @@ class GridBlock {
 
   GridBlock(this.height, this.prefab, this.x, this.y,
       {this.isHovered = false, this.activeHeavy = false});
+
+  GridBlock.from(GridBlock other)
+      : x = other.x,
+        y = other.y,
+        height = other.height,
+        prefab = other.prefab,
+        isHovered = false,
+        activeHeavy = false;
 }

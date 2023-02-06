@@ -64,7 +64,7 @@ class _ArenaGridState extends State<ArenaGrid> {
 
     final grid = Listener(
       onPointerDown: (event) => gridState.paintStart(appState),
-      onPointerUp: (event) => gridState.paintStop(),
+      onPointerUp: (event) => gridState.paintStop(appState),
       child: _buildArenaGrid(context)!,
     );
 

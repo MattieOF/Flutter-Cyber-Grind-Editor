@@ -27,6 +27,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _getVersion().then((value) => setState(() => appVersion = value));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppState.of(context).fToast.init(context);
+    });
   }
 
   Future<String> _getVersion() async {
@@ -63,6 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
       var file = File(result.files.single.path!);
       file.readAsString().then((String contents) {
         GridState.of(context).loadFromString(contents);
+        AppState.of(context).clearUndoHistory(GridState.of(context));
         Navigator.of(context).pushNamed('/editor');
       });
     } else {
@@ -115,6 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _newPattern() {
     AppState.of(context).setPastHome();
     GridState.of(context).resetPattern();
+    AppState.of(context).clearUndoHistory(GridState.of(context));
     Navigator.pushNamed(context, '/editor');
   }
 

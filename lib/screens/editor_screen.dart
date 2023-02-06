@@ -10,6 +10,7 @@ import 'package:cgef/widgets/exception_dialog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path/path.dart' as p;
 import 'package:cgef/helpers/parsing_helper.dart';
 import 'package:cgef/state/grid_state.dart';
@@ -35,6 +36,8 @@ class EditorScreen extends StatefulWidget {
 }
 
 class _EditorScreenState extends State<EditorScreen> {
+  final FocusNode _focusNode = FocusNode();
+
   AppState? _appState;
   GridState? _gridState;
 
@@ -51,6 +54,7 @@ class _EditorScreenState extends State<EditorScreen> {
   @override
   void initState() {
     super.initState();
+    _focusNode.requestFocus();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _appState ??= AppState.of(context);
       _gridState ??= GridState.of(context);
@@ -66,6 +70,12 @@ class _EditorScreenState extends State<EditorScreen> {
         if (rl.isWindowReady()) _initPreview();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 
   String _getExportableString() {
@@ -460,10 +470,12 @@ class _EditorScreenState extends State<EditorScreen> {
         rightLeft = 0;
       } else {
         if (((leftDiff < frontDiff) && (leftDiff < backDiff)) ||
-            ((rightDiff < frontDiff) && (rightDiff < backDiff)))
+            ((rightDiff < frontDiff) && (rightDiff < backDiff))) {
           backFront = 0;
-        else if (((frontDiff < leftDiff) && (frontDiff < rightDiff)) ||
-            ((backDiff < leftDiff) && (backDiff < rightDiff))) rightLeft = 0;
+        } else if (((frontDiff < leftDiff) && (frontDiff < rightDiff)) ||
+            ((backDiff < leftDiff) && (backDiff < rightDiff))) {
+          rightLeft = 0;
+        }
       }
     }
 
@@ -684,61 +696,111 @@ class _EditorScreenState extends State<EditorScreen> {
     final gridCentered = context.breakpoint > LayoutBreakpoint.xs &&
         context.breakpoint > LayoutBreakpoint.sm;
 
-    return Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size(0, 52),
-          child: Center(
-            child: Margin(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: ScopedModelDescendant<AppState>(
-                builder: (context, child, model) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TabButton(
-                        onPressed: () => model.setTab(AppTab.heights),
-                        active: model.tab == AppTab.heights,
-                        text: 'Heights',
-                        collapsed: !gridCentered,
-                        collapsedIcon: const Icon(Icons.height),
-                      ),
-                      TabButton(
-                        onPressed: () => model.setTab(AppTab.prefabs),
-                        active: model.tab == AppTab.prefabs,
-                        text: 'Prefabs',
-                        collapsed: !gridCentered,
-                        collapsedIcon: const Icon(Icons.widgets),
-                      ),
-                      if (Platform.isWindows || Platform.isLinux)
+    return Focus(
+      child: RawKeyboardListener(
+        focusNode: _focusNode,
+        onKey: (event) {
+          if (event is RawKeyDownEvent && event.isControlPressed) {
+            if (event.data.logicalKey == LogicalKeyboardKey.keyZ) {
+              var widget = _appState!.undo(_gridState!);
+              if (widget != null) {
+                _appState!.fToast.showToast(
+                  child: widget,
+                  toastDuration: const Duration(seconds: 1),
+                  positionedToastBuilder: (context, child) {
+                    return Positioned(
+                      bottom: 16.0,
+                      left: 16.0,
+                      child: child,
+                    );
+                  },
+                );
+              }
+            } else if (event.data.logicalKey == LogicalKeyboardKey.keyY) {
+              var widget = _appState!.redo(_gridState!);
+              if (widget != null) {
+                _appState!.fToast.showToast(
+                  child: widget,
+                  toastDuration: const Duration(seconds: 1),
+                  positionedToastBuilder: (context, child) {
+                    return Positioned(
+                      bottom: 16.0,
+                      left: 16.0,
+                      child: child,
+                    );
+                  },
+                );
+              }
+            }
+          }
+        },
+        child: Scaffold(
+          appBar: PreferredSize(
+            preferredSize: const Size(0, 52),
+            child: Center(
+              child: Margin(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ScopedModelDescendant<AppState>(
+                  builder: (context, child, model) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                         TabButton(
-                          onPressed: () {
-                            _initPreview();
-                          },
-                          active: model.tab == AppTab.preview,
-                          text: '3D Preview',
+                          onPressed: () => model.setTab(AppTab.heights),
+                          active: model.tab == AppTab.heights,
+                          text: 'Heights',
                           collapsed: !gridCentered,
-                          collapsedIcon: const Icon(Icons.remove_red_eye),
+                          collapsedIcon: const Icon(Icons.height),
                         ),
-                      TabButton(
-                        onPressed: _exportPressed,
-                        text: 'Export',
-                        collapsed: !gridCentered,
-                        collapsedIcon: const Icon(Icons.save),
-                      )
-                    ],
-                  );
-                },
+                        TabButton(
+                          onPressed: () => model.setTab(AppTab.prefabs),
+                          active: model.tab == AppTab.prefabs,
+                          text: 'Prefabs',
+                          collapsed: !gridCentered,
+                          collapsedIcon: const Icon(Icons.widgets),
+                        ),
+                        if (Platform.isWindows || Platform.isLinux)
+                          TabButton(
+                            onPressed: () {
+                              _initPreview();
+                            },
+                            active: model.tab == AppTab.preview,
+                            text: '3D Preview',
+                            collapsed: !gridCentered,
+                            collapsedIcon: const Icon(Icons.remove_red_eye),
+                          ),
+                        TabButton(
+                          onPressed: _exportPressed,
+                          text: 'Export',
+                          collapsed: !gridCentered,
+                          collapsedIcon: const Icon(Icons.save),
+                        )
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ),
-        ),
-        body: Listener(
-          child: ScopedModelDescendant<GridState>(
-            builder: (context, child, model) {
-              return gridCentered
-                  ? Center(
-                      child: Column(
+          body: Listener(
+            child: ScopedModelDescendant<GridState>(
+              builder: (context, child, model) {
+                return gridCentered
+                    ? Center(
+                        child: Column(
+                          children: [
+                            Text(_gridState?.getHoveredString() ?? ""),
+                            const SizedBox(
+                              height: 15,
+                            ),
+                            Expanded(
+                              child: ArenaGrid(model),
+                            )
+                          ],
+                        ),
+                      )
+                    : Column(
                         children: [
                           Text(_gridState?.getHoveredString() ?? ""),
                           const SizedBox(
@@ -748,27 +810,18 @@ class _EditorScreenState extends State<EditorScreen> {
                             child: ArenaGrid(model),
                           )
                         ],
-                      ),
-                    )
-                  : Column(
-                      children: [
-                        Text(_gridState?.getHoveredString() ?? ""),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        Expanded(
-                          child: ArenaGrid(model),
-                        )
-                      ],
-                    );
+                      );
+              },
+            ),
+            onPointerDown: (event) {
+              if (event.kind == PointerDeviceKind.mouse &&
+                  event.buttons == kSecondaryMouseButton) {
+                if (_gridState != null) _gridState!.onRightClick(_appState!);
+              }
             },
           ),
-          onPointerDown: (event) {
-            if (event.kind == PointerDeviceKind.mouse &&
-                event.buttons == kSecondaryMouseButton) {
-              if (_gridState != null) _gridState!.onRightClick(_appState!);
-            }
-          },
-        ));
+        ),
+      ),
+    );
   }
 }

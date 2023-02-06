@@ -1,13 +1,29 @@
 import 'dart:async';
 
+import 'package:cgef/helpers/parsing_helper.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cgef/helpers/stack.dart' as stack;
+
+import 'grid_state.dart';
+
+class HistoryStep {
+  List<List<GridBlock>> grid;
+  String name = "Untitled";
+
+  HistoryStep(List<List<GridBlock>> newGrid, String newName)
+      : grid = newGrid,
+        name = newName;
+}
 
 class AppState extends Model {
   BuildContext? buildContext;
 
   SharedPreferences? _sharedPreferences;
+  FToast fToast = FToast();
 
   Tool _tool = Tool.point;
   ToolModifier _toolModifier = ToolModifier.plusOne;
@@ -35,6 +51,8 @@ class AppState extends Model {
 
   Timer? raylibUpdateTimer;
 
+  stack.Stack<HistoryStep> _undoHistory = stack.Stack<HistoryStep>();
+
   AppState({this.buildContext}) {
     SharedPreferences.getInstance().then((value) {
       _sharedPreferences = value;
@@ -46,7 +64,7 @@ class AppState extends Model {
       _camFov = _sharedPreferences!.getDouble("camFOV") ?? 60;
       _invertMouseLook =
           _sharedPreferences!.getBool("invertMouselook") ?? false;
-      Timer.periodic(Duration(seconds: 1), (timer) {
+      Timer.periodic(const Duration(seconds: 1), (timer) {
         if (_dirty) {
           _sharedPreferences!
               .setBool("useImagesForPrefabs", _useImagesForPrefabs);
@@ -149,6 +167,102 @@ class AppState extends Model {
   void setGridBlockSelected(int index) {
     _toolSelectedGridBlock = index;
     notifyListeners();
+  }
+
+  void clearUndoHistory(GridState gridState) {
+    _undoHistory.clear(HistoryStep(
+        List.generate(
+            ParsingHelper.arenaSize,
+            (x) => List.generate(ParsingHelper.arenaSize,
+                (y) => GridBlock.from(gridState.grid[x][y]))),
+        ""));
+  }
+
+  Widget? undo(GridState gridState) {
+    if (_undoHistory.hasOneBehind) {
+      var undoingName = _undoHistory.peek.name;
+      _undoHistory.back();
+      gridState.grid = List.generate(
+          ParsingHelper.arenaSize,
+          (x) => List.generate(ParsingHelper.arenaSize,
+              (y) => GridBlock.from(_undoHistory.peek.grid[x][y])));
+
+      if (undoingName != "") {
+        notifyListeners();
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18.0),
+            color: Colors.greenAccent,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.check,
+                color: Colors.black,
+              ),
+              const SizedBox(
+                width: 12.0,
+              ),
+              Text("Undo: $undoingName",
+                  style: const TextStyle(color: Colors.black)),
+            ],
+          ),
+        );
+      }
+    }
+
+    notifyListeners();
+    return null;
+  }
+
+  Widget? redo(GridState gridState) {
+    if (_undoHistory.hasOneInFront) {
+      var redoingName = _undoHistory.peekInFront.name;
+      _undoHistory.forward();
+      gridState.grid = List.generate(
+          ParsingHelper.arenaSize,
+          (x) => List.generate(ParsingHelper.arenaSize,
+              (y) => GridBlock.from(_undoHistory.peek.grid[x][y])));
+
+      if (redoingName != "") {
+        notifyListeners();
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18.0),
+            color: Colors.greenAccent,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.check,
+                color: Colors.black,
+              ),
+              const SizedBox(
+                width: 12.0,
+              ),
+              Text("Redo: $redoingName",
+                  style: const TextStyle(color: Colors.black)),
+            ],
+          ),
+        );
+      }
+    }
+
+    notifyListeners();
+    return null;
+  }
+
+  void submitCommand(GridState gridState, String commandDesc) {
+    _undoHistory.push(HistoryStep(
+        List.generate(
+            ParsingHelper.arenaSize,
+            (x) => List.generate(ParsingHelper.arenaSize,
+                (y) => GridBlock.from(gridState.grid[x][y]))),
+        commandDesc));
   }
 
   static AppState of(BuildContext context) {
