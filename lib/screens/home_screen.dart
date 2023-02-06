@@ -206,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         applicationName: "Cyber Grind Pattern Editor",
                         applicationVersion: appVersion,
                         applicationLegalese:
-                            "Simple tool to edit Cyber Grind patterns for ULTRAKILL.\nBy PITR, with contributions from Mattie\ncopyright lololol",
+                            "Simple tool to edit Cyber Grind patterns for ULTRAKILL.\nBy PITR (pitr.dev), with contributions from Mattie (mattware.dev)\ncopyright lololol",
                       );
                     },
                     child: Text(
