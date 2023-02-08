@@ -201,13 +201,18 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 
   void _initPreview() {
-    var pathList = Platform.resolvedExecutable.split('\\');
-    var path = pathList.sublist(0, pathList.length - 1).join('\\');
+    var pathSep = '';
+    if (Platform.isWindows) {
+      pathSep = '\\';
+    } else {
+      pathSep = "/";
+    }
+    var pathList = Platform.resolvedExecutable.split(pathSep);
+    var path = pathList.sublist(0, pathList.length - 1).join(pathSep);
 
     if (!rl.isWindowReady()) {
       rl.initWindow(1280, 600, "Cyber Grind Preview");
-      rl.setWindowState(rl.ConfigFlags
-          .windowResizable); // I'd like to make it resizeable, but it causes weird issues with the skybox
+      rl.setWindowState(rl.ConfigFlags.windowResizable);
       rl.setExitKey(rl.KeyboardKey.none);
 
       rl.Image icon =
