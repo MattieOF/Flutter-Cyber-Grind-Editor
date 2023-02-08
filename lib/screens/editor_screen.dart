@@ -307,7 +307,7 @@ class _EditorScreenState extends State<EditorScreen> {
 
     if (_zapPlane == null) {
       rl.Texture2D zapGridTexture = rl.loadTexture(
-          "$path/data/flutter_assets/assets/preview_assets/zapGrid.png");
+          "$path/data/flutter_assets/assets/preview_assets/zapgrid.png");
       rl.setTextureWrap(zapGridTexture, rl.TextureWrap.repeat);
       rl.setTextureFilter(zapGridTexture, rl.TextureFilter.point);
       _zapPlane = rl.loadModel(
